@@ -8,14 +8,10 @@ import javax.swing.border.LineBorder;
  
 public class TicTacToeFrame extends JFrame
 {
-   // Indicate whose turn it is
    private char turn  = 'O';
    private boolean gameOver = false;
- 
-   // Create cell grid
    private Cell[][] a = new Cell[3][3];
- 
-   // Create a status label
+
    JLabel status = new JLabel("X's turn to play");
 
    
