@@ -1,0 +1,269 @@
+import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Random;
+import javax.swing.*;
+import javax.swing.border.LineBorder;
+
+import Minimax.Coordinate;
+ 
+public class TicTacToeFrame extends JFrame
+{
+   // Indicate whose turn it is
+   private char turn  = 'O';
+   private boolean gameOver = false;
+ 
+   // Create cell grid
+   private Cell[][] a = new Cell[3][3];
+ 
+   // Create a status label
+   JLabel status = new JLabel("X's turn to play");
+
+   
+
+   public TicTacToeFrame()//would by default call JFrame's constructor
+   {
+       // Panel to hold a
+       JPanel panel = new JPanel(new GridLayout(3, 3, 0, 0));
+       for (int i = 0; i < 3; i++)
+           for (int j = 0; j < 3; j++)
+               panel.add(a[i][j] = new Cell());
+
+   
+       add(panel, BorderLayout.CENTER);
+       //add(status, BorderLayout.SOUTH);
+   }
+
+   
+    public boolean isFull()
+    {
+       for (int i = 0; i < 3; i++)
+           for (int j = 0; j < 3; j++)
+               if (a[i][j].getBiaoshi() == ' ')
+                   return false;
+       return true;
+    }
+ 
+
+   public boolean isWon(char biaoshi)
+   {
+       // rows
+       for (int i = 0; i < 3; i++)
+           if ((a[i][0].getBiaoshi() == biaoshi)&& (a[i][1].getBiaoshi() == biaoshi) && (a[i][2].getBiaoshi() == biaoshi))
+           {
+               return true;
+           }
+ 
+       // columns
+       for (int j = 0; j < 3; j++)
+           if ((a[0][j].getBiaoshi() == biaoshi) && (a[1][j].getBiaoshi() == biaoshi)&& (a[2][j].getBiaoshi() == biaoshi))
+           {
+               return true;
+           }
+       // diagonal
+       if ((a[0][0].getBiaoshi() == biaoshi) && (a[1][1].getBiaoshi() == biaoshi) && (a[2][2].getBiaoshi() == biaoshi))
+           {
+               return true;
+           }
+ 
+       if ((a[0][2].getBiaoshi() == biaoshi) && (a[1][1].getBiaoshi() == biaoshi)&& (a[2][0].getBiaoshi() == biaoshi))
+           {
+               return true;
+           }
+ 
+       return false;
+   }
+ 
+   //an incapable computer
+   public void computer1() {
+	   //turn  = (turn  == 'X') ? 'O' : 'X';
+       status.setText(turn  + "'s turn.");
+       Random rand = new Random();
+       while(true) {
+    	   int row = rand.nextInt(3);
+    	   int col = rand.nextInt(3);
+    	   if(a[row][col].getBiaoshi()  == ' ') {
+    		   a[row][col].setBiaoshi('X');
+    		   break;
+    	   }
+        }
+   }
+   
+  
+   //We define larger value to be better for human; 
+   
+   
+   //a minimax computer 
+   public void computer2() {
+	   turn  = (turn  == 'X') ? 'O' : 'X';
+	   Coordinate move = minimaxMove(); 
+	   a[move.row][move.column].setBiaoshi('X'); 
+   }
+   
+   int evaluate(Cell[][] a) {
+	   //System.out.println("entered"); 
+	   if(isWon('X'))
+		   return -10; 
+	   else if(isWon('O'))
+		   return 10; 
+	   else
+		   return 0; 
+   }
+   
+   
+    int minimax(Cell[][] a, boolean isMax) {
+    	int jumianfen = evaluate(a); 
+    	System.out.println(jumianfen); 
+    	
+    	if(jumianfen == 10 || jumianfen == -10) //return the value if game ends; deterministic
+    		return jumianfen; //past back to last recursive call for botton down selection
+    	
+    	if(isFull())
+    		return 0; 
+    	
+    	if(isMax) { //human's turn 
+    		int best = -10000;
+    		for(int i = 0; i < 3; i ++) {
+    			for(int j = 0; j < 3; j++) {
+    				if(a[i][j].getBiaoshi() == ' ') {
+        				a[i][j].setBiaoshi('O') ; 
+        				best = Math.max(best, minimax(a, !isMax)); 
+        				a[i][j].setBiaoshi(' ');
+        			}
+    			}
+    		}
+    		return best; 
+    	}else {//computer's turn
+    		int best = 10000; 
+    		for(int i = 0; i < 3; i ++) {
+    			for(int j = 0; j < 3; j++) {
+    				if(a[i][j].getBiaoshi() == ' ') {
+        				a[i][j].setBiaoshi('X') ; 
+        				best = Math.min(best, minimax(a, !isMax)); 
+        				a[i][j].setBiaoshi(' ');
+        			}
+    			}
+    		}
+    		return best; 
+    	}
+    		
+    	
+    }
+	
+	
+	class Coordinate{
+		public int row, column; 
+	}
+	
+	Coordinate minimaxMove() {
+		int minVal = 1000;
+		Coordinate pos = new Coordinate(); 
+		pos.row = -999; 
+		pos.column = -999; 
+		
+		for(int i=0; i<3; i++) {
+			for(int j=0; j<3; j++) {
+				if(a[i][j].getBiaoshi() == ' ') {
+					a[i][j].setBiaoshi('X'); 
+					int value = minimax(a, true); 
+					a[i][j].setBiaoshi(' '); 
+					if(value < minVal) { //smallest value for computer
+						pos.row = i;  
+						pos.column = j; 
+						minVal = value; 
+					}
+				} 
+				
+			}
+		}
+		return pos; 
+	}
+	
+   
+
+    public class Cell extends JPanel
+    {
+
+       private char biaoshi = ' ';
+ 
+ 
+       public Cell()
+       {
+           setBorder(new LineBorder(Color.black, 1));
+           addMouseListener(new MyMouseListener());
+       }
+ 
+
+       public char getBiaoshi()
+       {
+           return biaoshi;
+       }
+
+       
+       public void setBiaoshi(char c)
+       {
+           biaoshi = c;
+           repaint();
+       }
+ 
+
+       
+       protected void paintComponent(Graphics g)
+       {
+           super.paintComponent(g); //basic work done by method of parent class
+ 
+           if (biaoshi == 'X')
+           {
+               g.drawLine(0, 0, getWidth(), getHeight());//first two for upperleft corner coordinate, 
+               g.drawLine(getWidth(), 0, 0, getHeight());
+           }
+ 
+           else if (biaoshi == 'O')
+           {
+               g.drawOval(0, 0, getWidth(), getHeight()); //first two for upperleft coner, rest two for width and height
+           }
+       }
+       
+       private class MyMouseListener extends MouseAdapter
+       {
+           public void mouseClicked(MouseEvent e)
+           {
+               if (gameOver)
+                   return;
+               
+               boolean b = true; //prevent double clicking
+               
+               if(biaoshi == 'O')
+            	   b = false; 
+
+               if (biaoshi == ' ' && turn  != ' ')
+                   setBiaoshi('O'); 
+
+               if (isWon('X'))
+               {
+                   status.setText( "X won!");
+                   turn  = ' ';
+                   gameOver = true;
+               }
+               if (isWon('O'))
+               {
+                   status.setText( "O won!");
+                   turn  = ' ';
+                   gameOver = true;
+               }
+               else if (isFull())
+               {
+                   status.setText("Tie game! Game over!");
+                   turn  = ' ';
+                   gameOver = true;
+               }
+               else 
+               {
+            	   if(b)
+            		   computer2();
+               }
+           }
+       } 
+    } 
+} 
